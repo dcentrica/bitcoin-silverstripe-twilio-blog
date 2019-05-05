@@ -2,4 +2,4 @@ assets
 vendor
 nbproject
 .env
-.docker
+.docker/mysql
