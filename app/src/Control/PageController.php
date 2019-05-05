@@ -67,9 +67,9 @@ class PageController extends ContentController
         $this->paymentClient->setCurrency($this->data()->Currency ?: 'Bitcoin');
         
         // Payment UI interactions
-        Requirements::css('client/css/dist/ui.css');
-        Requirements::javascript('client/js/lib/jquery/jquery-3.3.1.min.js');
-        Requirements::javascript('client/js/dist/ui.js');
+        Requirements::css('client/dist/css/ui.css');
+        Requirements::javascript('client/lib/jquery/jquery-3.3.1.min.js');
+        Requirements::javascript('client/dist/js/ui.js');
     }
 
     /**
@@ -123,7 +123,7 @@ class PageController extends ContentController
     }
     
     /**
-     * Fetch an invoice / address for use in QR codes for payments
+     * Fetch an invoice / address for use in QR codes for payments.
      * 
      * @return string
      */
@@ -158,7 +158,7 @@ class PageController extends ContentController
     public function webhookListen(array $data, string $hash, string $callback)
     {
         // Initialise a WebHook connection on our web API service
-        // We will only receive traffic from Blockcypher to our endpoint, when
+        // We will only receive traffic from Blockcypher to our endpoint when
         // 2 confirmations on TX's containing $data['Address'] have occurred.
         $filter = [
             'event' => 'tx-confirmation',

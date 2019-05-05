@@ -15,14 +15,14 @@ var isStopped = false;
             var address = $('[name="Address"]').val();
             var amount = $('[name="Amount"]').val();
             var endpointConf = $(this).closest('form').data('uri-confirmation');
-            var message = '';
+            var message = 'Awaiting payment..';
             
             if (!(body.length && phone.length)) {
                 return;
             }
             
             // Append the spinner
-            uiSpinnerComponent('Waiting..');
+            uiSpinnerComponent(message);
             
             // Repeatedly hit the endpoint until such time as we redirect.
             // This is pretty cludgy but it works.
@@ -52,7 +52,7 @@ var isStopped = false;
                     switch (data) {
                         case 0:
                         default:
-                            message = 'Waiting..';
+                            message = message;
                             break;
                         case 1:
                             message = 'Broadcasting..';
