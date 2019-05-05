@@ -1,11 +1,29 @@
 /**
  * Simple jQuery routines to pass some feedback to users as they wait for
- * Bitcoin transactions to confirm. This would be improved using Vue or React.
+ * Bitcoin transactions to confirm. This would be improved using some sorcery from
+ * Vue or React.
  */
 
 // The frequency at which we will hit our own endpoint
 var interval = 10000;
 var isStopped = false;
+var timer = 0;
+var timeLimit = 60;
+var message = 'Awaiting payment..';
+
+/**
+ * If we're still waiting for a payment to arrive after a given time limit,
+ * just give up and signal as such to the user.
+ */
+setInterval(function() {
+    timer++;
+    
+    if (timer >= timeLimit) {
+        message = 'Timeout: Payment not received. Giving up.';
+        isStopped = true;
+        return;
+    }
+}, 1000);
 
 (function($) {
     $(function() {
@@ -15,11 +33,12 @@ var isStopped = false;
             var address = $('[name="Address"]').val();
             var amount = $('[name="Amount"]').val();
             var endpointConf = $(this).closest('form').data('uri-confirmation');
-            var message = 'Awaiting payment..';
             
             if (!(body.length && phone.length)) {
                 return;
             }
+            
+            // 
             
             // Append the spinner
             uiSpinnerComponent(message);
