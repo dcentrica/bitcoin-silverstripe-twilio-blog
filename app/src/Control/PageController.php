@@ -67,9 +67,9 @@ class PageController extends ContentController
         $this->paymentClient->setCurrency($this->data()->Currency ?: 'Bitcoin');
         
         // Payment UI interactions
-        Requirements::css('client/css/dist/ui.css');
-        Requirements::javascript('client/js/lib/jquery/jquery-3.3.1.min.js');
-        Requirements::javascript('client/js/dist/ui.js');
+        Requirements::css('client/dist/css/ui.css');
+        Requirements::javascript('client/lib/jquery/jquery-3.3.1.min.js');
+        Requirements::javascript('client/dist/js/ui.js');
     }
 
     /**
@@ -85,7 +85,7 @@ class PageController extends ContentController
     public function TwilioSMSForm()
     {
         $paymentAmount = $this->paymentClient->getCurrency()::PAYMENT_AMOUNT;
-        $paymentAddress = $this->paymentClient->getAddress();
+        $paymentAddress = $this->getInvoice();
         $paymentSymbol =  $this->paymentClient->getCurrency()->iso4217();
         $minConfirmations = (int) SiteConfig::current_site_config()->getField('Confirmations') ?: 6;
 
@@ -119,8 +119,23 @@ class PageController extends ContentController
 
         // Form proper
         return Form::create($this, __FUNCTION__, $fields, FieldList::create(), $validator)
-                ->setAttribute('data-uri-confirmation', sprintf('%s/trigger', rtrim($this->Link(), '/')))
-                ->setAttribute('data-uri-thanks', '/thanks');
+                ->setAttribute('data-uri-confirmation', sprintf('%s/trigger', rtrim($this->Link(), '/')));
+    }
+    
+    /**
+     * Fetch an invoice / address for use in QR codes for payments.
+     * 
+     * @return string
+     */
+    public function getInvoice() : string
+    {
+        if (ENV::getEnv('APP_PAYMENT_ADDRESS')) {
+            $invoice = ENV::getEnv('APP_PAYMENT_ADDRESS');
+        } else {
+            $invoice = $this->paymentClient->getAddress();
+        }
+        
+        return $invoice;
     }
 
     /**
@@ -143,7 +158,7 @@ class PageController extends ContentController
     public function webhookListen(array $data, string $hash, string $callback)
     {
         // Initialise a WebHook connection on our web API service
-        // We will only receive traffic from Blockcypher to our endpoint, when
+        // We will only receive traffic from Blockcypher to our endpoint when
         // 2 confirmations on TX's containing $data['Address'] have occurred.
         $filter = [
             'event' => 'tx-confirmation',
@@ -452,7 +467,8 @@ class PageController extends ContentController
         $qrCode = new QrCode($this->paymentClient->getCurrency()->uriScheme($address, $amount));
         $qrCode->setSize(400);
         $qrCode->setWriterByName('png');
-        $qrCode->setLabel($message, 11);
+        // Problems with Docker image, mean FreeType libs are not installed
+        // $qrCode->setLabel($message, 11);
         $qrCode->setMargin(1);
         
         if ($path = SiteConfig::current_site_config()->qrLogo()) {
